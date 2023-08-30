@@ -1,13 +1,5 @@
 import { useState } from "react";
-
-function Square({ value, onSquareClick }) {
-  console.log("value: ", value);
-  return (
-    <button className="square" onClick={onSquareClick}>
-      {value}
-    </button>
-  );
-}
+import Square from "./components/Square";
 
 export default function Board() {
   const [squares, setSquares] = useState(Array(9).fill(null));

@@ -1,38 +1,43 @@
 import { useState, useEffect } from "react";
 import Square from "./components/Square";
 
-export default function Board() {
-  useEffect(() => {
-    document.title = "Tic Tac Toe";
-  }, []);
-
-  const [squares, setSquares] = useState(Array(9).fill(null));
-  const [xIsNext, setXIsNext] = useState(true);
-
+function Board({ xIsNext, squares, onPlay }) {
   function handleClick(i) {
-    console.log("clicked square ", i);
-    if (squares[i] || calculateWinner(squares)) return;
+    // gaboleh isi ulang
+    if (squares[i] || calculateWinner(squares)) {
+      return;
+    }
 
+    // bikin array baru yg sama dgn array yg lama
     const nextSquares = squares.slice();
+    if (xIsNext) {
+      nextSquares[i] = "X";
+    } else {
+      nextSquares[i] = "O";
+    }
 
-    nextSquares[i] = xIsNext ? "X" : "O";
-    setSquares(nextSquares);
-    setXIsNext(!xIsNext);
+    onPlay(nextSquares);
   }
 
   const winner = calculateWinner(squares);
   let status = "";
   if (winner) {
-    status = "Winner: " + winner;
+    status = "Winner " + winner;
   } else {
-    status = "Next player: " + (xIsNext ? "X" : "O");
+    status = "Next player " + (xIsNext ? "X" : "O");
   }
+  console.log(winner);
 
   return (
     <>
-      <h1>Tic Tac Toe</h1>
       <div className="status">{status}</div>
       <div className="board">
+        {/* {squares.map((squareValue, index) => (
+          <Square key={index} value={squareValue} onSquareClick={handleClick(0)}/>
+        ))} */}
+
+        {/* kasih () => biar fungsi ga langsung dijalanin, tapi nunggu diklik dulu */}
+
         <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
         <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
         <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
@@ -47,14 +52,78 @@ export default function Board() {
   );
 }
 
+export default function Game() {
+  useEffect(() => {
+    document.title = "Tic Tac Toe";
+  }, []);
+
+  // array 2 dimensi
+  // lifting state, naikin kondisi 1 board ke game
+  const [history, setHistory] = useState([Array(9).fill(null)]);
+
+  // buat jump to
+  const [currentMove, setCurrentMove] = useState(0);
+
+  // ngatur giliran
+  const xIsNext = currentMove % 2 === 0;
+
+  // current adalah history yg terakhir
+  const currentSquares = history[currentMove];
+
+  function jumpTo(nextMove) {
+    setCurrentMove(nextMove);
+    // move ganjil - o
+    // move genap - x
+  }
+
+  function handlePlay(nextSquares) {
+    // ambil history yg diklik yg mana
+    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+    // ... spread operator utk iterasi array
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length - 1);
+  }
+
+  // button
+  // move adalah index map
+  const moves = history.map((squares, move) => {
+    let description = "";
+    if (move > 0) {
+      description = "Go to move # " + move;
+    } else {
+      description = "Go to game start";
+    }
+
+    return (
+      <li key={move}>
+        <button onClick={() => jumpTo(move)}>{description}</button>
+      </li>
+    );
+  });
+
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+      </div>
+      <div className="game-info">
+        <ol>{moves}</ol>
+      </div>
+    </div>
+  );
+}
+
 function calculateWinner(squares) {
   const lines = [
+    //Horizontal Line
     [0, 1, 2],
     [3, 4, 5],
     [6, 7, 8],
+    //Vertical Line
     [0, 3, 6],
     [1, 4, 7],
     [2, 5, 8],
+    //Diagonal Line
     [0, 4, 8],
     [2, 4, 6],
   ];
@@ -66,7 +135,7 @@ function calculateWinner(squares) {
     const [a, b, c] = lines[i];
 
     // ['X', 'X', 'X', 'O','O', null, null, null, null]
-    if (squares[a] && squares[a] === squares[b] && squares[c]) {
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
       return squares[a];
     }
   }

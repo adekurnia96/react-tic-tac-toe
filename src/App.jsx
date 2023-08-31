@@ -1,7 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Square from "./components/Square";
 
 export default function Board() {
+  useEffect(() => {
+    document.title = "Tic Tac Toe";
+  }, []);
+
   const [squares, setSquares] = useState(Array(9).fill(null));
   const [xIsNext, setXIsNext] = useState(true);
 
@@ -26,6 +30,7 @@ export default function Board() {
 
   return (
     <>
+      <h1>Tic Tac Toe</h1>
       <div className="status">{status}</div>
       <div className="board">
         <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
